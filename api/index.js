@@ -1,25 +1,18 @@
-const express = require("express");
-const fs = require("fs");
-const https = require("https");
-const path = require("path");
-const { GoogleAuth } = require("google-auth-library");
+import https from "https";
+import { GoogleAuth } from "google-auth-library";
 
-const app = express();
-const PORT = 3000;
-const KEY_PATH = path.join(__dirname, "lyria.json");
-
-if (!fs.existsSync(KEY_PATH)) {
-	console.error("Error: lyria.json missing from root directory!");
-	process.exit(1);
-}
-
-app.use(express.static(path.join(__dirname, "public")));
-
-app.get("/api/generate-music", async (req, res) => {
+export default async function handler(req, res) {
+	if (req.method !== "GET") {
+		return res.status(405).json({ error: "Method not allowed" });
+	}
 	console.log("Auth pipeline triggered. Fetching token...");
 	try {
+		if (!process.env.GCP_CREDENTIALS_JSON) {
+			throw new Error("Missing GCP_CREDENTIALS_JSON environment variable.");
+		}
+		const credentials = JSON.parse(process.env.GCP_CREDENTIALS_JSON);
 		const auth = new GoogleAuth({
-			keyFile: KEY_PATH,
+			credentials,
 			scopes: "https://www.googleapis.com/auth/generative-language",
 		});
 		const client = await auth.getClient();
@@ -48,7 +41,6 @@ app.get("/api/generate-music", async (req, res) => {
 				},
 			],
 		});
-
 		const options = {
 			hostname: "generativelanguage.googleapis.com",
 			path: `/v1beta/models/lyria-3-clip-preview:generateContent`,
@@ -60,7 +52,6 @@ app.get("/api/generate-music", async (req, res) => {
 			},
 			timeout: 60000,
 		};
-
 		const gcpReq = https.request(options, (gcpRes) => {
 			let body = "";
 			gcpRes.on("data", (chunk) => (body += chunk));
@@ -104,9 +95,4 @@ app.get("/api/generate-music", async (req, res) => {
 	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}
-});
-
-app.listen(PORT, () => {
-	console.log(`\nArchitecture cleaned and modularized!`);
-	console.log(`Running locally at http://localhost:${PORT}`);
-});
+}
