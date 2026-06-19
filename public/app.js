@@ -68,7 +68,7 @@ async function pregenerateParkingSong() {
 	stateDisplay.textContent = "Compiling real-time track audio...";
 	stateDisplay.className = "footnote generating";
 	try {
-		const response = await fetch("/api/generate-music");
+		const response = await fetch("/api");
 		if (!response.ok) throw new Error("API compilation stream error");
 		const audioBlob = await response.blob();
 		trackBlobUrl = URL.createObjectURL(audioBlob);
