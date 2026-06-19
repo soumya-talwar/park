@@ -30,11 +30,19 @@ app.get("/api/generate-music", async (req, res) => {
 				{
 					parts: [
 						{
-							text: `An upbeat, high-energy modern Punjabi Pop and Bhangra track, 128 BPM, with a total duration of 30 seconds. Crucially, there is no musical intro; the vocals must start immediately on the very first beat of the song. Driven by a groovy, bouncing dholak rhythm, a catchy repeating tumbi melody, and a clean, punchy synth bass. The vocals are a smooth but powerful male Punjabi pop voice singing with joyful relief and high energy, pacing the lyrics quickly so the entire block is fully sung before the 30 seconds conclude. The theme is pure peace and relaxation because the drive is over. Lyrics: 
-          		Aha! Hunn sukoon mil gaya yaara, gaddi khadi ae bada pyaara!
-          		Na koi tension na koi ror, engine band te lutt lo mauj!
-          		Aithe hi beh ke thoda hassiye, sachi yaaro nazaara aa gaya!
-          		Balle balle, kamaal ho gaya, parking mil gayi! `,
+							text: `A professional-grade, hyper-energetic, fast-paced modern Punjabi Pop and Bhangra track at 130 BPM, with a total duration of 30 seconds. 
+
+          Track Architecture & Audio Engineering Rules:
+          - ABSOLUTELY ZERO INTRO: The male vocals must explode instantly on the very first frame of the audio stream. 
+          - Rhythmic Structure: Maintain a relentless, hard-hitting live Dhol and Dholak rhythmic loop with sharp, snapping claps on the backbeat.
+          - Lead Instrument: A traditional, bright, repeating Tumbi melody must act as the high-energy main hook behind the vocals. 
+          - Lower End: A heavy, clean, pumping modern synthetic 808 sub-bass to anchor the groove.
+          - The song must have a definitive, intentional musical resolution at the 29-second mark so it ends on a punchy final beat rather than fading or cutting off.
+
+          Vocal & Linguistic Specifications:
+          - Vocal Profile: A powerful, high-pitched, open-throated native Punjabi male pop singer. The delivery must sound like a major urban Punjabi music release (high-energy, melodic but aggressively rhythmic).
+          - Theme: Extreme celebration, high-octane hype, and massive relief because the destination is reached, the engine is shut off, and the car is parked.
+          - Vocabulary Constraints: Write and sing lyrics using authentic Malwai/Majhi regional vocabulary written in the Latin alphabet. Focus heavily on rhythmic, rhyming couplets that perfectly syncopate with the dhol. Use powerful expressions of relief and victory (e.g., "Yaara", "Gaddi khadi", "Sukoon", "Kamaal", "Balle Balle"). Avoid commercial Hindi-pop words entirely to ensure structural authenticity.`,
 						},
 					],
 				},
