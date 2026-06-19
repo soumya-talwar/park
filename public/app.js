@@ -19,9 +19,8 @@ startBtn.addEventListener("click", async () => {
 			audioPlayer.pause();
 			audioPlayer.currentTime = 0;
 		})
-		.catch((err) => console.log("Audio thread prepped."));
+		.catch((err) => console.log("Media channel primed."));
 	pregenerateParkingSong();
-
 	if (
 		typeof DeviceMotionEvent !== "undefined" &&
 		typeof DeviceMotionEvent.requestPermission === "function"
@@ -31,10 +30,10 @@ startBtn.addEventListener("click", async () => {
 			if (permissionState === "granted") {
 				startSensorTracking();
 			} else {
-				alert("Permission to access device motion data was denied.");
+				stateDisplay.textContent = "Sensor authorization rejected.";
 			}
 		} catch (error) {
-			console.error("Error requesting sensor clearance:", error);
+			console.error("Sensor calibration exception:", error);
 		}
 	} else {
 		startSensorTracking();
@@ -42,38 +41,40 @@ startBtn.addEventListener("click", async () => {
 });
 
 async function pregenerateParkingSong() {
-	console.log("Contacting local backend api logic...");
-	stateDisplay.textContent = "Status: Generating AI Hype Track...";
-	stateDisplay.className = "state-badge generating";
+	console.log("Contacting Lyria generation engine...");
+	stateDisplay.textContent = "Compiling real-time track audio...";
+	stateDisplay.className = "footnote generating";
 	try {
 		const response = await fetch("/api/generate-music");
-		if (!response.ok)
-			throw new Error("Backend server down or error fetching stream");
+		if (!response.ok) throw new Error("API compilation stream error");
 		const audioBlob = await response.blob();
 		const audioUrl = URL.createObjectURL(audioBlob);
 		audioPlayer.src = audioUrl;
 		audioPlayer.load();
-		console.log("Lyria track buffered successfully.");
+		console.log("Lyria track buffered locally.");
 		if (isPipelineActive) {
-			stateDisplay.textContent = "Status: Monitoring Drive (Track Ready)";
-			stateDisplay.className = "state-badge active";
+			stateDisplay.textContent = "Drive monitoring active. Audio buffered.";
+			stateDisplay.className = "footnote active";
 		}
 	} catch (error) {
-		console.error("Music generation pipeline failure:", error);
-		stateDisplay.textContent = "Status: Generation Failed (Using Fallback)";
-		audioPlayer.src =
-			"https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg";
-		audioPlayer.load();
+		console.error("Audio stream acquisition broke:", error);
+		stateDisplay.textContent = "Network error. System offline.";
 	}
 }
 
 function startSensorTracking() {
 	isPipelineActive = true;
-	startBtn.style.display = "none";
-	if (stateDisplay.textContent !== "Status: Generating AI Hype Track...") {
-		stateDisplay.textContent = "Status: Monitoring Drive";
-		stateDisplay.className = "state-badge active";
+	startBtn.disabled = true;
+	startBtn.style.background = "rgba(255, 255, 255, 0.05)";
+	startBtn.style.color = "rgba(255, 255, 255, 0.2)";
+	startBtn.style.boxShadow = "none";
+	startBtn.style.border = "1px solid rgba(255, 255, 255, 0.05)";
+	startBtn.textContent = "MONITORING ACTIVE";
+	if (stateDisplay.textContent !== "Compiling real-time track audio...") {
+		stateDisplay.textContent = "Drive monitoring active.";
+		stateDisplay.className = "footnote active";
 	}
+
 	window.addEventListener("devicemotion", (event) => {
 		if (songHasPlayed || !isPipelineActive) return;
 		const acc = event.accelerationIncludingGravity;
@@ -106,14 +107,15 @@ function calculateVariance(array) {
 function triggerParkingSequence() {
 	songHasPlayed = true;
 	isPipelineActive = false;
-	stateDisplay.textContent = "Status: Engine Off / Parked";
-	stateDisplay.className = "state-badge triggered";
-	varianceDisplay.style.color = "#f85149";
+	stateDisplay.textContent = "Ignition cut detected. Sequence executed.";
+	stateDisplay.className = "footnote triggered";
+	startBtn.textContent = "ARRIVED";
 	audioPlayer
 		.play()
-		.then(() => console.log("Song playing on CarPlay line."))
+		.then(() => console.log("Stream array deployed to hardware successfully."))
 		.catch((err) => {
-			console.error("Playback block:", err);
-			stateDisplay.textContent = "Status: Click to Play Music";
+			console.error("Forced block detected:", err);
+			stateDisplay.textContent =
+				"Playback blocked. Tap screen to release audio.";
 		});
 }

@@ -7,12 +7,17 @@
 		<link rel="stylesheet" href="/style.css" />
 	</head>
 	<body>
-		<div id="status-card">
-			<h2>Park</h2>
-			<div id="state-display" class="state-badge">Status: Awaiting Tap</div>
-			<div class="metric" id="variance-display">0.00000</div>
-			<p class="label-text">Current 1s Rolling Variance</p>
+		<div id="app-container">
+			<div class="metric-group">
+				<div class="metric" id="variance-display">0.00000</div>
+				<p class="label-text">variance</p>
+			</div>
+
 			<button id="start-btn">START DRIVE</button>
+
+			<div id="state-display" class="footnote">
+				System idle. Ready for initialization.
+			</div>
 		</div>
 
 		<audio id="parking-song" preload="auto"></audio>
