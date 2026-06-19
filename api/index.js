@@ -1,9 +1,9 @@
-import https from "https";
 import { GoogleAuth } from "google-auth-library";
 
 export default async function handler(req, res) {
 	if (req.method !== "GET") {
-		return res.status(405).json({ error: "Method not allowed" });
+		res.writeHead(405, { "Content-Type": "application/json" });
+		return res.end(JSON.stringify({ error: "Method not allowed" }));
 	}
 	console.log("Auth pipeline triggered. Fetching token...");
 	try {
@@ -13,12 +13,12 @@ export default async function handler(req, res) {
 		const credentials = JSON.parse(process.env.GCP_CREDENTIALS_JSON);
 		const auth = new GoogleAuth({
 			credentials,
-			scopes: "https://www.googleapis.com/auth/generative-language",
+			scopes: ["https://www.googleapis.com/auth/generative-language"],
 		});
 		const client = await auth.getClient();
 		const tokenResponse = await client.getAccessToken();
 		const ACCESS_TOKEN = tokenResponse.token;
-		const payload = JSON.stringify({
+		const payload = {
 			contents: [
 				{
 					parts: [
@@ -40,59 +40,57 @@ export default async function handler(req, res) {
 					],
 				},
 			],
-		});
-		const options = {
-			hostname: "generativelanguage.googleapis.com",
-			path: `/v1beta/models/lyria-3-clip-preview:generateContent`,
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${ACCESS_TOKEN}`,
-				"Content-Type": "application/json",
-				"Content-Length": Buffer.byteLength(payload),
-			},
-			timeout: 60000,
 		};
-		const gcpReq = https.request(options, (gcpRes) => {
-			let body = "";
-			gcpRes.on("data", (chunk) => (body += chunk));
-			gcpRes.on("end", () => {
-				try {
-					const responseData = JSON.parse(body);
-					if (gcpRes.statusCode !== 200) {
-						console.error(`API Error (${gcpRes.statusCode}):`, responseData);
-						return res.status(gcpRes.statusCode).json(responseData);
-					}
-					const parts = responseData?.candidates?.[0]?.content?.parts || [];
-					let base64Audio = null;
-					for (const part of parts) {
-						if (part.inlineData && part.inlineData.data) {
-							base64Audio = part.inlineData.data;
-							break;
-						}
-					}
-					if (base64Audio) {
-						console.log(
-							"Lyria audio stream compiled. Flushing buffer to mobile client...",
-						);
-						const audioBuffer = Buffer.from(base64Audio, "base64");
-						res.setHeader("Content-Type", "audio/mpeg");
-						return res.send(audioBuffer);
-					} else {
-						return res
-							.status(500)
-							.json({ error: "No media blocks inside response." });
-					}
-				} catch (err) {
-					return res
-						.status(500)
-						.json({ error: "Failed parsing API body payload." });
-				}
+		const lyriaResponse = await fetch(
+			"https://generativelanguage.googleapis.com/v1beta/models/lyria-3-clip-preview:generateContent",
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${ACCESS_TOKEN}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(payload),
+			},
+		);
+		if (!lyriaResponse.ok) {
+			const errorText = await lyriaResponse.text();
+			console.error(
+				`Lyria Gateway API Error (${lyriaResponse.status}):`,
+				errorText,
+			);
+			res.writeHead(lyriaResponse.status, {
+				"Content-Type": "application/json",
 			});
-		});
-		gcpReq.on("error", (e) => res.status(500).json({ error: e.message }));
-		gcpReq.write(payload);
-		gcpReq.end();
+			return res.end(errorText);
+		}
+		const responseData = await lyriaResponse.json();
+		const parts = responseData?.candidates?.[0]?.content?.parts || [];
+		let base64Audio = null;
+		for (const part of parts) {
+			if (part.inlineData && part.inlineData.data) {
+				base64Audio = part.inlineData.data;
+				break;
+			}
+		}
+		if (base64Audio) {
+			console.log(
+				"Lyria audio stream compiled successfully. Flushing payload buffer...",
+			);
+			const audioBuffer = Buffer.from(base64Audio, "base64");
+			res.writeHead(200, {
+				"Content-Type": "audio/mpeg",
+				"Content-Length": audioBuffer.length,
+			});
+			return res.end(audioBuffer);
+		} else {
+			res.writeHead(500, { "Content-Type": "application/json" });
+			return res.end(
+				JSON.stringify({ error: "No media blocks inside response payload." }),
+			);
+		}
 	} catch (err) {
-		res.status(500).json({ error: err.message });
+		console.error("Critical Serverless Function Exception:", err.message);
+		res.writeHead(500, { "Content-Type": "application/json" });
+		return res.end(JSON.stringify({ error: err.message }));
 	}
 }
