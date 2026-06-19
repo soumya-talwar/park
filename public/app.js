@@ -25,7 +25,7 @@ startBtn.addEventListener("click", async () => {
 			audioPlayer.currentTime = 0;
 		})
 		.catch((err) => console.log("Media channel primed."));
-	pregenerateParkingSong();
+	let permissionsGranted = false;
 	if (
 		typeof DeviceMotionEvent !== "undefined" &&
 		typeof DeviceMotionEvent.requestPermission === "function"
@@ -33,14 +33,19 @@ startBtn.addEventListener("click", async () => {
 		try {
 			const permissionState = await DeviceMotionEvent.requestPermission();
 			if (permissionState === "granted") {
-				startSensorTracking();
+				permissionsGranted = true;
 			} else {
 				stateDisplay.textContent = "Sensor authorization rejected.";
 			}
 		} catch (error) {
 			console.error("Sensor calibration exception:", error);
+			stateDisplay.textContent = "Hardware permission error.";
 		}
 	} else {
+		permissionsGranted = true;
+	}
+	if (permissionsGranted) {
+		pregenerateParkingSong();
 		startSensorTracking();
 	}
 });
@@ -154,6 +159,8 @@ function resetSystemState() {
 	songHasPlayed = false;
 	lowVarianceFrameCount = 0;
 	magnitudeHistory = [];
+	trackBlobUrl = null;
+	mediaControls.classList.add("hidden");
 	varianceDisplay.textContent = "0.00000";
 	stateDisplay.textContent = "System idle. Ready for initialization.";
 	stateDisplay.className = "footnote";
