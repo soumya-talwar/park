@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Park Engine</title>
+		<link rel="stylesheet" href="/style.css" />
+	</head>
+	<body>
+		<div id="status-card">
+			<h2>Park</h2>
+			<div id="state-display" class="state-badge">Status: Awaiting Tap</div>
+			<div class="metric" id="variance-display">0.00000</div>
+			<p class="label-text">Current 1s Rolling Variance</p>
+			<button id="start-btn">START DRIVE</button>
+		</div>
+
+		<audio id="parking-song" preload="auto"></audio>
+
+		<script src="/app.js"></script>
+	</body>
+</html>
